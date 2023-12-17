@@ -70,7 +70,7 @@ export const spotify = () => {
     },
     isPlaying: async () => {
       const playbackState = await client.player.getPlaybackState();
-      return playbackState.is_playing;
+      return playbackState?.is_playing;
     },
   };
 };

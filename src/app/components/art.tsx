@@ -2,7 +2,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Image, { StaticImageData } from 'next/image';
 import ColorThief from 'colorthief';
-import { useInterval, usePrevious } from 'react-use';
+import {
+  useInterval,
+  usePrevious,
+  usePreviousDistinct,
+  useWindowSize,
+} from 'react-use';
 import { spotify } from '../api/spotify/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RxTrackNext, RxTrackPrevious, RxPause } from 'react-icons/rx';
@@ -10,6 +15,7 @@ import { Track, Episode } from '@spotify/web-api-ts-sdk';
 import { useRouter } from 'next/navigation';
 import { ImHeart } from 'react-icons/im';
 import { PiPlayPauseFill } from 'react-icons/pi';
+import cx from 'classnames';
 
 type Palette = [number, number, number][];
 
@@ -31,40 +37,40 @@ export const Art = () => {
   const [trackName, setTrackName] = useState<string>('');
   const isLoaded = useRef(false);
   const [queue, setQueue] = useState<(Track | Episode)[]>([]);
+  const [isInactive, setIsInactive] = useState(true);
 
   useEffect(() => {
-    if (imageElement) {
+    document.documentElement.style.setProperty('--color-primary', primaryColor);
+
+    document.documentElement.style.setProperty(
+      '--color-secondary',
+      secondaryColor
+    );
+
+    return () => {
       document.documentElement.style.setProperty(
         '--color-primary',
-        primaryColor
+        `rgba(0,0,0,1)`
       );
 
       document.documentElement.style.setProperty(
         '--color-secondary',
-        secondaryColor
+        `rgb(205, 184, 186)` // temp
       );
-
-      return () => {
-        document.documentElement.style.setProperty(
-          '--color-primary',
-          `rgba(255,255,255,1)`
-        );
-
-        document.documentElement.style.setProperty(
-          '--color-secondary',
-          `rgb(205, 184, 186)` // temp
-        );
-      };
-    }
+    };
   }, [colorThief, imageElement, primaryColor, secondaryColor]);
 
   const { push } = useRouter();
+
+  const { width } = useWindowSize();
+  const isMobile = width <= 660;
 
   const fetchAndSetupSpotifyData = async () => {
     try {
       const { currently_playing, queue } = await spotify().queue();
 
       if (currently_playing) {
+        setIsInactive(false);
         setArtistNames(
           (currently_playing as any).artists.map((artist: any) => artist.name)
         );
@@ -72,6 +78,8 @@ export const Art = () => {
         if ((currently_playing as any).album?.images?.length) {
           setImage((currently_playing as any).album?.images[0].url);
         }
+      } else {
+        setIsInactive(true);
       }
 
       setQueue(queue);
@@ -95,9 +103,21 @@ export const Art = () => {
     }
   });
 
+  const previousIsInactive = usePrevious(isInactive);
+  useEffect(() => {
+    if (previousIsInactive !== isInactive && isInactive) {
+      setPrimaryColor(`rgba(0,0,0)`);
+      setSecondaryColor(`rgba(0,0,0)`);
+    }
+  }, [isInactive, previousIsInactive]);
+
   useInterval(async () => {
     await fetchAndSetupSpotifyData();
   }, 5000);
+
+  if (isInactive) {
+    return null;
+  }
 
   return (
     <div className="flex w-full items-center flex-wrap">
@@ -114,7 +134,7 @@ export const Art = () => {
             }}
           >
             <button
-              className="active:opacity-50 transition-all active:scale-125 -ml-12 pr-6"
+              className="active:opacity-50 transition-all active:scale-125 -ml-12 px-6"
               onClick={async () => {
                 await spotify().previous();
                 await fetchAndSetupSpotifyData();
@@ -122,13 +142,18 @@ export const Art = () => {
             >
               <RxTrackPrevious
                 color={convertToRgbString(palette[2])}
-                size={50}
+                size={isMobile ? 25 : 50}
               />
             </button>
           </motion.div>
         ) : null}
       </AnimatePresence>
-      <figure className="w-[35vw] z-30 relative">
+      <figure
+        className={cx('z-30 relative', {
+          ['w-[15vw]']: isMobile,
+          ['w-[35vw]']: !isMobile,
+        })}
+      >
         <AnimatePresence>
           {image && isImageLoaded ? (
             <motion.div
@@ -234,7 +259,7 @@ export const Art = () => {
             style={{
               color: secondaryColor,
             }}
-            size={25}
+            size={isMobile ? 12 : 25}
           />
           <button
             className="active:opacity-75 transition-all active:scale-125"
@@ -251,7 +276,7 @@ export const Art = () => {
               style={{
                 color: secondaryColor,
               }}
-              size={40}
+              size={isMobile ? 20 : 40}
             />
           </button>
         </div>
@@ -275,14 +300,17 @@ export const Art = () => {
                 await fetchAndSetupSpotifyData();
               }}
             >
-              <RxTrackNext color={convertToRgbString(palette[2])} size={50} />
+              <RxTrackNext
+                color={convertToRgbString(palette[2])}
+                size={isMobile ? 25 : 50}
+              />
             </button>
           </motion.div>
         ) : null}
       </AnimatePresence>
       <div className="w-full flex mt-8">
         <AnimatePresence>
-          {queue.slice(0, 3).map((item, idx) => {
+          {queue.slice(0, isMobile ? 2 : 3).map((item, idx) => {
             return <QueueItem key={item.id} index={idx} {...item} />;
           })}
         </AnimatePresence>
@@ -311,6 +339,8 @@ const QueueItem = (props: QueueItemPropsTrack | QueueItemPropsEpisode) => {
       setTimeout(() => setIsImageLoaded(true), 1000);
     }
   }, [image, previousImage]);
+  const { width } = useWindowSize();
+  const isMobile = width <= 660;
 
   return (
     <motion.button
@@ -332,7 +362,12 @@ const QueueItem = (props: QueueItemPropsTrack | QueueItemPropsEpisode) => {
         <div className="flex items-center">
           <AnimatePresence>
             {isImageLoaded ? (
-              <motion.figure className="w-[100px] h-[100px] [box-shadow:_2px_2px_0px_rgb(0_0_0_/_25%)]">
+              <motion.figure
+                className={cx('[box-shadow:_2px_2px_0px_rgb(0_0_0_/_25%)]', {
+                  ['w-[50px] h-[50px]']: isMobile,
+                  ['w-[100px] h-[100px]']: !isMobile,
+                })}
+              >
                 <Image
                   onLoad={(img) => {
                     if (img?.currentTarget?.getAttribute('src')) {
@@ -341,9 +376,9 @@ const QueueItem = (props: QueueItemPropsTrack | QueueItemPropsEpisode) => {
                   }}
                   alt={`art for ${name}`}
                   src={image}
-                  width={100}
-                  height={100}
-                  className="w-[100px] h-[100px]"
+                  width={isMobile ? 50 : 100}
+                  height={isMobile ? 50 : 100}
+                  //   className="w-[100px] h-[100px]"
                 />
               </motion.figure>
             ) : null}
