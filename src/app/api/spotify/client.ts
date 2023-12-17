@@ -1,4 +1,4 @@
-import { SHOPIFY_COOKIE_NAME, SHOPIFY_TOKEN_COOKIE } from '@/app/constants';
+import { SPOTIFY_COOKIE_NAME, SPOTIFY_TOKEN_COOKIE } from '@/app/constants';
 import { AccessToken, SpotifyApi } from '@spotify/web-api-ts-sdk';
 import Cookies from 'js-cookie';
 
@@ -24,7 +24,7 @@ const refreshAccessToken = async (accessToken: AccessToken): Promise<void> => {
           ...token,
         };
         console.log('newCookieValue', newCookieValue);
-        Cookies.set(SHOPIFY_COOKIE_NAME, btoa(JSON.stringify(newCookieValue)));
+        Cookies.set(SPOTIFY_COOKIE_NAME, btoa(JSON.stringify(newCookieValue)));
       }
     }
   } catch (error) {
@@ -51,7 +51,7 @@ export const spotifyClientBrowser = (encodedToken: string) => {
 };
 
 export const spotify = () => {
-  const client = spotifyClientBrowser(SHOPIFY_TOKEN_COOKIE);
+  const client = spotifyClientBrowser(SPOTIFY_TOKEN_COOKIE);
   return {
     queue: async () => await client.player.getUsersQueue(),
     next: async () => await client.player.skipToNext(''),

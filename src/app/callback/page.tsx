@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { AccessToken } from '@spotify/web-api-ts-sdk';
 import Cookies from 'js-cookie';
-import { SHOPIFY_COOKIE_NAME } from '../constants';
+import { SPOTIFY_COOKIE_NAME } from '../constants';
 
 const fetchAccessToken = async (code: string): Promise<AccessToken> => {
   const data = await fetch(`/api/spotify/token?code=${code}`).then((res) =>
@@ -29,7 +29,7 @@ export default function Callback({
           console.log(token);
           setServerError('Error getting token, please try logging in again.');
         } else {
-          Cookies.set(SHOPIFY_COOKIE_NAME, btoa(JSON.stringify(token)));
+          Cookies.set(SPOTIFY_COOKIE_NAME, btoa(JSON.stringify(token)));
           push('/');
         }
       });

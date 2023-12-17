@@ -60,7 +60,7 @@ export const Art = () => {
 
   const { push } = useRouter();
 
-  const fetchAndSetupShopifyData = async () => {
+  const fetchAndSetupSpotifyData = async () => {
     try {
       const { currently_playing, queue } = await spotify().queue();
 
@@ -91,12 +91,12 @@ export const Art = () => {
   useEffect(() => {
     if (isLoaded.current === false) {
       isLoaded.current = true;
-      fetchAndSetupShopifyData();
+      fetchAndSetupSpotifyData();
     }
   });
 
   useInterval(async () => {
-    await fetchAndSetupShopifyData();
+    await fetchAndSetupSpotifyData();
   }, 5000);
 
   return (
@@ -117,7 +117,7 @@ export const Art = () => {
               className="active:opacity-50 transition-all active:scale-125 -ml-12 pr-6"
               onClick={async () => {
                 await spotify().previous();
-                await fetchAndSetupShopifyData();
+                await fetchAndSetupSpotifyData();
               }}
             >
               <RxTrackPrevious
@@ -272,7 +272,7 @@ export const Art = () => {
               className="active:opacity-50 transition-all active:scale-125"
               onClick={async () => {
                 await spotify().next();
-                await fetchAndSetupShopifyData();
+                await fetchAndSetupSpotifyData();
               }}
             >
               <RxTrackNext color={convertToRgbString(palette[2])} size={50} />

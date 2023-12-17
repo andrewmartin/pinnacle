@@ -1,9 +1,5 @@
+import { REDIRECT_URI, SCOPE, SPOTIFY_AUTHORIZE_URL } from '@/app/constants';
 import { NextResponse } from 'next/server';
-
-const SPOTIFY_AUTHORIZE_URL = 'https://accounts.spotify.com/authorize?';
-export const REDIRECT_URI = 'http://localhost:3000/callback';
-export const SCOPE =
-  'user-read-private user-read-email streaming user-read-playback-state user-modify-playback-state user-read-currently-playing';
 
 export const dynamic = 'force-dynamic'; // defaults to auto
 export async function GET(request: Request) {

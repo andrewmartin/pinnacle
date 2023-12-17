@@ -1,6 +1,5 @@
+import { CLIENT_ID_AND_SECRET, REDIRECT_URI } from '@/app/constants';
 import { NextRequest, NextResponse } from 'next/server';
-import { REDIRECT_URI } from '../login/route';
-const CLIENT_ID_AND_SECRET = `${process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`;
 
 export const dynamic = 'force-dynamic';
 
