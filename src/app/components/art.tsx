@@ -367,6 +367,12 @@ const QueueItem = (props: QueueItemPropsTrack | QueueItemPropsEpisode) => {
                   ['w-[50px] h-[50px]']: isMobile,
                   ['w-[100px] h-[100px]']: !isMobile,
                 })}
+                initial={{ opacity: 0, scale: 1.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0 }}
+                transition={{
+                  ease: 'easeInOut',
+                }}
               >
                 <Image
                   onLoad={(img) => {
@@ -378,10 +384,18 @@ const QueueItem = (props: QueueItemPropsTrack | QueueItemPropsEpisode) => {
                   src={image}
                   width={isMobile ? 50 : 100}
                   height={isMobile ? 50 : 100}
+
                   //   className="w-[100px] h-[100px]"
                 />
               </motion.figure>
-            ) : null}
+            ) : (
+              <figure
+                style={{
+                  width: isMobile ? 50 : 100,
+                  height: isMobile ? 50 : 100,
+                }}
+              />
+            )}
           </AnimatePresence>
           <div className="px-4 flex-1">
             <h3
