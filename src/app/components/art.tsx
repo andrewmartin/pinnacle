@@ -385,12 +385,12 @@ const QueueItem = (props: QueueItemPropsTrack | QueueItemPropsEpisode) => {
           </AnimatePresence>
           <div className="px-4 flex-1">
             <h3
-              className={`transition-all w-full mb-[1vh] leading-[2vw] text-[1.8vw] font-semibold [text-shadow:_2px_2px_0px_rgb(0_0_0_/_30%)]`}
+              className={`transition-all w-full mb-[1vh] leading-[2vw] text-[1.8vw] font-semibold [text-shadow:_2px_2px_0px_rgb(0_0_0_/_30%)] text-left`}
             >
               {name}
             </h3>
             <p
-              className={`transition-all m-0 leading-[1.2vw] text-[1.2vw] opacity-75`}
+              className={`transition-all m-0 leading-[1.2vw] text-[1.2vw] opacity-75 text-left`}
             >
               {(props as any).artists
                 .slice(0, 2)
