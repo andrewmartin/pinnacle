@@ -2,17 +2,11 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Image, { StaticImageData } from 'next/image';
 import ColorThief from 'colorthief';
-import {
-  useInterval,
-  usePrevious,
-  usePreviousDistinct,
-  useWindowSize,
-} from 'react-use';
+import { useInterval, usePrevious, useWindowSize } from 'react-use';
 import { spotify } from '../api/spotify/client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RxTrackNext, RxTrackPrevious, RxPause } from 'react-icons/rx';
+import { RxTrackNext, RxTrackPrevious } from 'react-icons/rx';
 import { Track, Episode } from '@spotify/web-api-ts-sdk';
-import { useRouter } from 'next/navigation';
 import { ImHeart } from 'react-icons/im';
 import { PiPlayPauseFill } from 'react-icons/pi';
 import cx from 'classnames';
@@ -60,12 +54,10 @@ export const Art = () => {
     };
   }, [colorThief, imageElement, primaryColor, secondaryColor]);
 
-  const { push } = useRouter();
-
   const { width } = useWindowSize();
   const isMobile = width <= 660;
 
-  const fetchAndSetupSpotifyData = async () => {
+  const spotifyCallback = async () => {
     try {
       const { currently_playing, queue } = await spotify().queue();
 
@@ -99,7 +91,7 @@ export const Art = () => {
   useEffect(() => {
     if (isLoaded.current === false) {
       isLoaded.current = true;
-      fetchAndSetupSpotifyData();
+      spotifyCallback();
     }
   });
 
@@ -112,11 +104,18 @@ export const Art = () => {
   }, [isInactive, previousIsInactive]);
 
   useInterval(async () => {
-    await fetchAndSetupSpotifyData();
+    await spotifyCallback();
   }, 5000);
 
   if (isInactive) {
-    return null;
+    return (
+      <button
+        onClick={async () => await spotify().resume()}
+        className="opacity-5 text-[2vw]"
+      >
+        Paused, click to resume
+      </button>
+    );
   }
 
   return (
@@ -137,7 +136,7 @@ export const Art = () => {
               className="active:opacity-50 transition-all active:scale-125 -ml-12 px-6"
               onClick={async () => {
                 await spotify().previous();
-                await fetchAndSetupSpotifyData();
+                await spotifyCallback();
               }}
             >
               <RxTrackPrevious
@@ -297,7 +296,7 @@ export const Art = () => {
               className="active:opacity-50 transition-all active:scale-125"
               onClick={async () => {
                 await spotify().next();
-                await fetchAndSetupSpotifyData();
+                await spotifyCallback();
               }}
             >
               <RxTrackNext
