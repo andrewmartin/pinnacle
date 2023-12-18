@@ -84,7 +84,7 @@ export const Art = () => {
 
       setQueue(queue);
     } catch (error) {
-      push('/api/spotify/login');
+      console.error('Error in fetchAndSetupSpotifyData:', error);
     }
   };
 

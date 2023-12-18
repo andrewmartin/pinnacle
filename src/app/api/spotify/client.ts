@@ -50,7 +50,7 @@ export const spotifyClientBrowser = (encodedToken: string) => {
   return client;
 };
 
-export const spotify = () => {
+export const spotify = (accessToken?: AccessToken) => {
   const client = spotifyClientBrowser(SPOTIFY_TOKEN_COOKIE);
   return {
     queue: async () => await client.player.getUsersQueue(),
