@@ -10,6 +10,7 @@ import { Track, Episode } from '@spotify/web-api-ts-sdk';
 import { ImHeart } from 'react-icons/im';
 import { PiPlayPauseFill } from 'react-icons/pi';
 import cx from 'classnames';
+import { useRouter } from 'next/navigation';
 
 type Palette = [number, number, number][];
 
@@ -56,6 +57,7 @@ export const Art = () => {
 
   const { width } = useWindowSize();
   const isMobile = width <= 730;
+  const { push } = useRouter();
 
   const spotifyCallback = async () => {
     try {
@@ -76,7 +78,11 @@ export const Art = () => {
 
       setQueue(queue);
     } catch (error) {
-      console.error('Error in fetchAndSetupSpotifyData:', error);
+      const errorMessage = (error as any).toString();
+      console.error('Error in fetchAndSetupSpotifyData:', errorMessage);
+      if (errorMessage.indexOf('Bad or expired token')) {
+        return push('/api/spotify/login');
+      }
     }
   };
 
