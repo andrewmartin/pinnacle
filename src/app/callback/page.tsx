@@ -37,7 +37,7 @@ export default function Callback({
   }, [push, searchParams.code]);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center pr-[5%] pl-[5%] bg-black">
+    <>
       {serverError ? (
         <button
           onClick={() => {
@@ -49,6 +49,6 @@ export default function Callback({
       ) : (
         'Loading...'
       )}
-    </main>
+    </>
   );
 }

@@ -7,7 +7,7 @@ const outfit = Outfit({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Pinnacle',
-  description: 'A dashboard app designed for Chrome kiosk use.',
+  description: 'A dashboard app designed for kiosk use.',
 };
 
 export default function RootLayout({

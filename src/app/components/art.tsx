@@ -55,7 +55,7 @@ export const Art = () => {
   }, [colorThief, imageElement, primaryColor, secondaryColor]);
 
   const { width } = useWindowSize();
-  const isMobile = width <= 660;
+  const isMobile = width <= 730;
 
   const spotifyCallback = async () => {
     try {
@@ -119,7 +119,7 @@ export const Art = () => {
   }
 
   return (
-    <div className="flex w-full items-center flex-wrap">
+    <div className="py-6 flex w-full items-center flex-wrap">
       <AnimatePresence>
         {palette && isImageLoaded ? (
           <motion.div
@@ -150,7 +150,7 @@ export const Art = () => {
       <figure
         className={cx('z-30 relative', {
           ['w-[15vw]']: isMobile,
-          ['w-[35vw]']: !isMobile,
+          ['w-[30vw]']: !isMobile,
         })}
       >
         <AnimatePresence>
@@ -195,7 +195,7 @@ export const Art = () => {
           ) : null}
         </AnimatePresence>
       </figure>
-      <div className="pl-12 flex-1 flex items-center">
+      <div className="pl-6 flex-1 flex items-center">
         <div>
           <AnimatePresence>
             {isImageLoaded ? (
