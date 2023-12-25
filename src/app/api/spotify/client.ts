@@ -50,6 +50,8 @@ export const spotifyClientBrowser = (encodedToken: string) => {
   return client;
 };
 
+export type SpotifyClient = ReturnType<typeof spotify>;
+
 export const spotify = (client: SpotifyApi) => {
   return {
     queue: async () => await client.player.getUsersQueue(),

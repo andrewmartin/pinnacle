@@ -3,7 +3,11 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Image, { StaticImageData } from 'next/image';
 import ColorThief from 'colorthief';
 import { useInterval, usePrevious, useWindowSize } from 'react-use';
-import { spotify, spotifyClientBrowser } from '../api/spotify/client';
+import {
+  SpotifyClient,
+  spotify,
+  spotifyClientBrowser,
+} from '../api/spotify/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RxTrackNext, RxTrackPrevious } from 'react-icons/rx';
 import { Track, Episode } from '@spotify/web-api-ts-sdk';
@@ -321,7 +325,14 @@ export const Art = ({ spotifyCookieValue }: ArtProps) => {
       <div className="w-full flex mt-8">
         <AnimatePresence>
           {queue.slice(0, isMobile ? 2 : 3).map((item, idx) => {
-            return <QueueItem key={item.id} index={idx} {...item} />;
+            return (
+              <QueueItem
+                spotifyClient={spotifyClient}
+                key={item.id}
+                index={idx}
+                {...item}
+              />
+            );
           })}
         </AnimatePresence>
       </div>
@@ -329,15 +340,15 @@ export const Art = ({ spotifyCookieValue }: ArtProps) => {
   );
 };
 
-interface QueueItemPropsTrack extends Track {
+interface QueueItemProps {
+  spotifyClient: SpotifyClient;
   index: number;
 }
-interface QueueItemPropsEpisode extends Episode {
-  index: number;
-}
+interface QueueItemPropsTrack extends Track, QueueItemProps {}
+interface QueueItemPropsEpisode extends Episode, QueueItemProps {}
 
 const QueueItem = (props: QueueItemPropsTrack | QueueItemPropsEpisode) => {
-  const { name, index } = props;
+  const { name, index, spotifyClient } = props;
 
   const image = (props as any)?.album?.images[0].url;
   const [isImageLoaded, setIsImageLoaded] = useState(false);
