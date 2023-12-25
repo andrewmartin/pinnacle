@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Image, { StaticImageData } from 'next/image';
 import ColorThief from 'colorthief';
 import { useInterval, usePrevious, useWindowSize } from 'react-use';
-import { spotify } from '../api/spotify/client';
+import { spotify, spotifyClientBrowser } from '../api/spotify/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RxTrackNext, RxTrackPrevious } from 'react-icons/rx';
 import { Track, Episode } from '@spotify/web-api-ts-sdk';
@@ -18,7 +18,11 @@ const convertToRgbString = (paletteItem: Palette[number]) => {
   return `rgba(${paletteItem.join(',')})`;
 };
 
-export const Art = () => {
+interface ArtProps {
+  spotifyCookieValue: string;
+}
+
+export const Art = ({ spotifyCookieValue }: ArtProps) => {
   const [imageElement, setImageElement] = useState<
     HTMLImageElement | undefined
   >();
@@ -33,6 +37,7 @@ export const Art = () => {
   const isLoaded = useRef(false);
   const [queue, setQueue] = useState<(Track | Episode)[]>([]);
   const [isInactive, setIsInactive] = useState(true);
+  const spotifyClient = spotify(spotifyClientBrowser(spotifyCookieValue));
 
   useEffect(() => {
     document.documentElement.style.setProperty('--color-primary', primaryColor);
@@ -61,7 +66,7 @@ export const Art = () => {
 
   const spotifyCallback = async () => {
     try {
-      const { currently_playing, queue } = await spotify().queue();
+      const { currently_playing, queue } = await spotifyClient.queue();
 
       if (currently_playing) {
         setIsInactive(false);
@@ -80,7 +85,7 @@ export const Art = () => {
     } catch (error) {
       const errorMessage = (error as any).toString();
       console.error('Error in fetchAndSetupSpotifyData:', errorMessage);
-      if (errorMessage.indexOf('Bad or expired token')) {
+      if (errorMessage.indexOf('Bad or expired token') > -1) {
         return push('/api/spotify/login');
       }
     }
@@ -116,7 +121,7 @@ export const Art = () => {
   if (isInactive) {
     return (
       <button
-        onClick={async () => await spotify().resume()}
+        onClick={async () => await spotifyClient.resume()}
         className="opacity-5 text-[2vw]"
       >
         Paused, click to resume
@@ -141,7 +146,7 @@ export const Art = () => {
             <button
               className="active:opacity-50 transition-all active:scale-125 -ml-12 px-6"
               onClick={async () => {
-                await spotify().previous();
+                await spotifyClient.previous();
                 await spotifyCallback();
               }}
             >
@@ -269,11 +274,11 @@ export const Art = () => {
           <button
             className="active:opacity-75 transition-all active:scale-125"
             onClick={async () => {
-              const isPlaying = await spotify().isPlaying();
+              const isPlaying = await spotifyClient.isPlaying();
               if (isPlaying) {
-                await spotify().pause();
+                await spotifyClient.pause();
               } else {
-                await spotify().resume();
+                await spotifyClient.resume();
               }
             }}
           >
@@ -301,7 +306,7 @@ export const Art = () => {
             <button
               className="active:opacity-50 transition-all active:scale-125"
               onClick={async () => {
-                await spotify().next();
+                await spotifyClient.next();
                 await spotifyCallback();
               }}
             >
@@ -350,7 +355,7 @@ const QueueItem = (props: QueueItemPropsTrack | QueueItemPropsEpisode) => {
   return (
     <motion.button
       onClick={async () => {
-        await spotify().skipAhead(index + 1);
+        await spotifyClient.skipAhead(index + 1);
       }}
       key={props.name}
       className="flex justify-center w-full transition-all opacity-50"

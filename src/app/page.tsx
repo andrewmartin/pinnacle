@@ -11,11 +11,12 @@ export default function Home() {
   if (!cookie?.value) {
     return redirect('/api/spotify/login');
   }
+
   return (
     <>
       <Logo />
       <main className="flex min-h-screen flex-col items-center justify-center pr-[5%] pl-[5%]">
-        <Art />
+        <Art spotifyCookieValue={cookie?.value} />
       </main>
     </>
   );

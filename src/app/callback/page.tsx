@@ -1,4 +1,5 @@
 'use client';
+
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { AccessToken } from '@spotify/web-api-ts-sdk';
@@ -30,7 +31,7 @@ export default function Callback({
           setServerError('Error getting token, please try logging in again.');
         } else {
           Cookies.set(SPOTIFY_COOKIE_NAME, btoa(JSON.stringify(token)));
-          push('/');
+          push(`/`);
         }
       });
     }
@@ -47,7 +48,7 @@ export default function Callback({
           {serverError}
         </button>
       ) : (
-        'Loading...'
+        <p>Loading...</p>
       )}
     </>
   );
