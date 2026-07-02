@@ -1,0 +1,58 @@
+# Copy this into a Vercel-deployed repo at .github/workflows/pager.yml
+#
+# Vercel's native deploy webhooks are Pro-only, but Vercel creates a GitHub
+# Deployment for every deploy and updates its status — which is free. This
+# Action listens for that status and pings pager with the deploy URL.
+#
+# Add two repo secrets (Settings → Secrets and variables → Actions):
+#   PAGER_URL    e.g. https://pager.<you>.workers.dev
+#   PAGER_TOKEN  the SHARED_SECRET you set on the worker
+#
+# Optional: set a repo Actions *variable* PROD_URL to your production domain
+# (Settings → Secrets and variables → Actions → Variables, or
+# `gh variable set PROD_URL --body https://example.com`). Vercel's
+# deployment_status only carries the immutable per-deploy URL (…-hash.vercel.app),
+# never the production alias — so for a successful Production deploy we link to
+# PROD_URL instead. Preview deploys and Production *failures* keep the per-deploy
+# URL (you want the exact broken build to inspect, not the still-live site).
+# Unset PROD_URL to always use the per-deploy URL.
+name: Notify on Vercel deploy
+
+on:
+  deployment_status: {}
+
+jobs:
+  notify:
+    # Only ping on terminal states, not every transition.
+    if: >
+      github.event.deployment_status.state == 'success' ||
+      github.event.deployment_status.state == 'failure' ||
+      github.event.deployment_status.state == 'error'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping pager
+        env:
+          PAGER_URL: ${{ secrets.PAGER_URL }}
+          PAGER_TOKEN: ${{ secrets.PAGER_TOKEN }}
+          STATE: ${{ github.event.deployment_status.state }}
+          TARGET_URL: ${{ github.event.deployment_status.target_url }}
+          ENVIRONMENT: ${{ github.event.deployment_status.environment }}
+          PROJECT: ${{ github.event.repository.name }}
+          BRANCH: ${{ github.event.deployment.ref }}
+          PROD_URL: ${{ vars.PROD_URL }}
+        run: |
+          URL="$TARGET_URL"
+          if [ "$ENVIRONMENT" = "Production" ] && [ "$STATE" = "success" ] && [ -n "$PROD_URL" ]; then
+            URL="$PROD_URL"
+          fi
+          # deployment.ref is the commit SHA; show a short form, not a 40-char hash.
+          REF="$BRANCH"; case "$REF" in *[!0-9a-f]*) : ;; *) [ ${#REF} -ge 12 ] && REF="${REF:0:7}" ;; esac
+          curl -fsS -X POST "$PAGER_URL/vercel?token=$PAGER_TOKEN" \
+            -H 'Content-Type: application/json' \
+            -d "$(jq -nc \
+              --arg state   "$STATE" \
+              --arg url     "$URL" \
+              --arg env     "$ENVIRONMENT" \
+              --arg project "$PROJECT" \
+              --arg branch  "$REF" \
+              '{state:$state,url:$url,environment:$env,project:$project,branch:$branch}')"
